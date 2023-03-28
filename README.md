@@ -1,15 +1,15 @@
-# Greenery_COVID-19
+#Greenery_COVID-19
 
 
-###To clear the memory history and select the dataset that will be used in the analysis
+    ###To clear the memory history and select the dataset that will be used in the analysis
 
 rm(list=ls())
 file.choose()
 
 
-###Modeling Greenness and COVID-19 infection at different spatial scales (local municipality & Ward).
+    ###Modeling Greenness and COVID-19 infection at different spatial scales (local municipality & Ward).
 
-##We first tested for Multicollinearity between predictor variables.
+    ##We first tested for Multicollinearity between predictor variables.
 library(car)
 
 model_0 <- lm(cases~age+revenue_capita+pop+area+mean, data = prevalence)
@@ -17,7 +17,7 @@ vif(model_0)
 
 
 
-############### In this section, we model greenness and COVID-19 infection at Local Municipality scale.
+    ############### In this section, we model greenness and COVID-19 infection at Local Municipality scale.
 prevalence <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Local_Mun.txt", header = TRUE)
 
 attach(prevalence)
@@ -138,13 +138,13 @@ Model21 <- glmmTMB(cases_area ~ grassland + age + pop + revenue_capita +
 summary(Model21)
 
 
-############### In this section,we model greenness and COVID-19 infection at Ward scale.
+    ############### In this section,we model greenness and COVID-19 infection at Ward scale.
 prevalence_2 <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Mun_Ward.txt", header = TRUE)
 attach(prevalence_2)
 head(prevalence_2)
 library(glmmTMB)
 
-##We started by testing for Multicollinearity  between the predictor variables
+    ##We started by testing for Multicollinearity  between the predictor variables
 library(car)
 
 model_00 <- lm(cases~age+revenue_capita+pop+area+mean, data = prevalence_2)
@@ -272,14 +272,14 @@ summary(Model42)
 
 
 
-############### In this section,we model greenness and COVID-19-related Hospitalisation
+    ############### In this section,we model greenness and COVID-19-related Hospitalisation
 severity <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Hosp_Dist.txt", header = TRUE)
 names(severity)
 attach(severity)
 library(glmmTMB)
 
 
-##We started by testing for Multicollinearity  between the predictor variables
+    ##We started by testing for Multicollinearity  between the predictor variables
 library(car)
 
 model_000 <- lm(hosp~age+revenue_capita+pop+area+mean, data = severity)
@@ -400,7 +400,7 @@ summary(Model63)
 
 
 
-######### We plotted variables that depict a strong negative relationship between greenness and COVID-19 infections or Hospitalisations
+    ######### We plotted variables that depict a strong negative relationship between greenness and COVID-19 infections or Hospitalisations
 
 par(mfrow=c(2,3))
 
