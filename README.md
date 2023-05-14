@@ -1,425 +1,267 @@
-#Greenery_COVID-19
+# Greener neighbourhoods show resilience to the spread but not severity of COVID-19 infection in South Africa 
 
+rm(list=ls()) #To clear memory history 
 
-    ###To clear the memory history and select the dataset that will be used in the analysis
-
-rm(list=ls())
 file.choose()
 
+## Section 1.  Test for multicollinearity between the three predictor variables: age, revenue, and population density. Three tests are conducted at three separate spatial scales: local municipality, Ward, and district level.
 
-    ###Modeling Greenness and COVID-19 infection at different spatial scales (local municipality & Ward).
+library(MASS)
 
-    ##We first tested for Multicollinearity between predictor variables.
 library(car)
 
-model_0 <- lm(cases~age+revenue_capita+pop+area+mean, data = prevalence)
-vif(model_0)
+### Section 1.1.  VIF test at District Level (COVID-19 hospitalisations).
+
+Data_1 <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R 
+
+Analysis\\vifHosp.txt", header = T)
+
+names(Data_1)
+
+Model_1V <- glm(hospital_pop~age+rev_capita+pop_dens, data = Data_1)
+
+vif(Model_1V)
 
 
+### Section 1.2. VIF test at Local municipality level (COVID-19 infection).
 
-    ############### In this section, we model greenness and COVID-19 infection at Local Municipality scale.
-prevalence <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Local_Mun.txt", header = TRUE)
+Data_2 <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R Analysis\\vifLoc.txt", header = T)
+
+names(vifLoc)
+
+Model_2V <- glm(cases_pop~revenue_capita+age+pop_dens, data = Data_2)
+
+vif(Model_2V)
+
+#### After removing "age" to reduce collinearity.
+Model_2Vi <- glm(cases_pop~revenue_capita+pop_dens, data = Data_2)
+
+vif(Model_2Vi)
+
+
+### Section 1.2.  VIF test at Municipal Ward (COVID-19 infection)
+Data_3 <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R Analysis\\vifWard.txt", header = T)
+
+names(vifWard)
+
+Model_3V <- glm(cases_pop~age+rev_capita+pop_dens, data = Data_3)
+
+vif(Model_3V)
+
+
+## Section 2. In this section, we model greenness and COVID-19 infection at Local Municipality and Ward scale. COVID-19 is measured in three way: count number of infections, number of infections per population, and number of infections per surface area. Greenness is measured as enhanced vegetation index (EVI), grassland cover, and forest cover. The three measures of greenness are each tested at two separate levels: Local municipality scale and Ward scale.
+
+### Section 2.1. In this subsection, we focus on the local municipality scale.
+
+prevalence <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R Analysis\\Used Texts\\Local_Mun.txt", header = TRUE)
 
 attach(prevalence)
+
 head(prevalence)
+
 library(glmmTMB)
 
 
-    #### For Spatial Scale: Local Municipality; Response Variable: Number of infections (Family = negative binomial)
+#### Section 2.1.1.  For Spatial Scale: Local Municipality; Response Variable: Number of infections (Family = negative binomial)
 
-Model1 <- glmmTMB(cases ~ max + age + pop + area + revenue_capita +
+Model1 <- glmmTMB(cases ~ mean + revenue_capita + pop_dens +
                     (1|province/district), data = prevalence, family = nbinom2)
+                    
 summary(Model1)
 
 
-Model2 <- glmmTMB(cases ~ mean + age + pop + area +  revenue_capita + 
+Model2 <- glmmTMB(cases ~ grassland + revenue_capita + pop_dens +
                     (1|province/district), data = prevalence, family = nbinom2)
+                    
 summary(Model2)
 
 
-Model3 <- glmmTMB(cases ~ median + age + pop + area +  revenue_capita +
+Model3 <- glmmTMB(cases ~ forest + revenue_capita + pop_dens +
                     (1|province/district), data = prevalence, family = nbinom2)
+                    
 summary(Model3)
 
 
-Model4 <- glmmTMB(cases ~ range + age + pop + area +  revenue_capita +
-                    (1|province/district), data = prevalence, family = nbinom2)
+#### Section 2.1.2. For Spatial scale: Local Municipality; Response Variable: Number of infections per population (Family = Beta)
+
+Model4 <- glmmTMB(cases_pop ~ mean + revenue_capita + pop_dens +
+                    (1|province/district), data = prevalence, family = beta_family)
+                    
 summary(Model4)
 
 
-Model5 <- glmmTMB(cases ~ stdev + age + pop + area +  revenue_capita +
-                    (1|province/district), data = prevalence, family = nbinom2)
+Model5 <- glmmTMB(cases_pop ~ grassland + revenue_capita + pop_dens +
+                    (1|province/district), data = prevalence, family = beta_family)
+                    
 summary(Model5)
 
 
-Model6 <- glmmTMB(cases ~ forest + age + pop + area +  revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
+Model6 <- glmmTMB(cases_pop ~ forest + revenue_capita + pop_dens +
+                     (1|province/district), data = prevalence, family = beta_family)
+                     
 summary(Model6)
 
+####  Section 2.1.3. For Spatial Scale: Local Municipality; Response Variable: Number of cases per surface area (Family = negative binomial)
 
-Model7 <- glmmTMB(cases ~ grassland + age + pop + area +  revenue_capita +
+Model7 <- glmmTMB(cases_area ~ mean + revenue_capita + pop_dens +
                      (1|province/district), data = prevalence, family = nbinom2)
+                     
 summary(Model7)
 
 
-
-        #### For Spatial scale: Local Municipality; Response Variable: Number of infections per population (Family = Beta)
-
-Model8 <- glmmTMB(cases_pop ~ max + age + area + revenue_capita + 
-                     (1|province/district), data = prevalence, family = beta_family)
+Model8 <- glmmTMB(cases_area ~ grassland + revenue_capita + pop_dens +
+                     (1|province/district), data = prevalence, family = nbinom2)
+                     
 summary(Model8)
 
 
-Model9 <- glmmTMB(cases_pop ~ mean + age + area + revenue_capita +
-                     (1|province/district), data = prevalence, family = beta_family)
+Model9 <- glmmTMB(cases_area ~ forest + revenue_capita + pop_dens +
+                     (1|province/district), data = prevalence, family = nbinom2)
+                     
 summary(Model9)
 
 
-Model10 <- glmmTMB(cases_pop ~ median + age + area + revenue_capita +
-                     (1|province/district), data = prevalence, family = beta_family)
+
+### Section 2.2. In this section,we model greenness and COVID-19 infection at Ward scale.
+
+prevalence_2 <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R Analysis\\Used Texts\\Mun_Ward.txt", header = TRUE)
+
+attach(prevalence_2)
+
+head(prevalence_2)
+
+library(glmmTMB)
+
+#### Section 2.2.1. For Spatial Scale: Municipal Ward; Response Variable: Number of infections (Family = negative binomial)
+
+Model10 <- glmmTMB(cases ~ mean + age + revenue_capita + pop_dens+ 
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model10)
 
 
-Model11 <- glmmTMB(cases_pop ~ range + age + area + revenue_capita +
-                    (1|province/district), data = prevalence, family = beta_family)
+Model11 <- glmmTMB(cases ~ grassland + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model11)
 
 
-Model12 <- glmmTMB(cases_pop ~ stdev + age + area + revenue_capita + 
-                     (1|province/district), data = prevalence, family = beta_family)
+Model12 <- glmmTMB(cases ~ forest + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model12)
 
+#### Section 2.2.2. For Spatial Scale: Municipal Ward; Response Variable: Number of infections per population (Family = Beta)
 
-Model13 <- glmmTMB(cases_pop ~ forest + age + area + revenue_capita + 
-                     (1|province/district), data = prevalence, family = beta_family)
+Model13 <- glmmTMB(cases_pop ~ mean + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2,
+                   ziformula = ~mean + age + pop_dens + revenue_capita, family = beta_family)
+                   
 summary(Model13)
 
 
-Model14 <- glmmTMB(cases_pop ~ grassland + age + area + revenue_capita +
-                    (1|province/district), data = prevalence, family = beta_family)
+Model14 <- glmmTMB(cases_pop ~ grassland + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2,
+                   ziformula = ~grassland + age + pop_dens + revenue_capita, family = beta_family)
+                   
 summary(Model14)
 
 
-
-        ### For Spatial Scale: Local Municipality; Response Variable: Number of cases per surface area (Family = negative binomial)
-
-Model15 <- glmmTMB(cases_area ~ max + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
+Model15 <- glmmTMB(cases_pop ~ forest + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2,
+                   ziformula = ~forest + age + pop_dens + revenue_capita, family = beta_family)
+                   
 summary(Model15)
 
 
-Model16 <- glmmTMB(cases_area ~ mean + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
+
+#### Section 2.2.3. For Spatial Scale: Municipal Ward; Response Variable: Number of infections per surface area (Family = negative binomial)
+
+Model16 <- glmmTMB(cases_area ~ mean + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model16)
 
 
-Model17 <- glmmTMB(cases_area ~ median + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
+Model17 <- glmmTMB(cases_area ~ grassland + age + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model17)
 
 
-Model18 <- glmmTMB(cases_area ~ range + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
+Model18 <- glmmTMB(cases_area ~ forest + age  + revenue_capita + pop_dens +
+                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+                     
 summary(Model18)
 
 
-Model19 <- glmmTMB(cases_area ~ stdev + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
-summary(Model19)
+## Section 3. In this section,we model greenness and COVID-19-related Hospitalizations at District level. COVID-19 hospitalisation is measured in three way: count number of hospitalisations, number of hospitalisations per population, and number of hospitalisations per surface area. Greenness is measured as enhanced vegetation index (EVI), grassland cover, and forest cover.
 
+severity <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev May 2023\\R Analysis\\Used Texts\\Hosp_Dist.txt", header = TRUE)
 
-Model20 <- glmmTMB(cases_area ~ forest + age + pop  + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
-summary(Model20)
+names(severity)
 
+attach(severity)
 
-Model21 <- glmmTMB(cases_area ~ grassland + age + pop + revenue_capita +
-                     (1|province/district), data = prevalence, family = nbinom2)
-summary(Model21)
-
-
-    ############### In this section,we model greenness and COVID-19 infection at Ward scale.
-prevalence_2 <- read.table( "C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Mun_Ward.txt", header = TRUE)
-attach(prevalence_2)
-head(prevalence_2)
 library(glmmTMB)
 
-    ##We started by testing for Multicollinearity  between the predictor variables
-library(car)
+### Section 3.1.  For Spatial Scale: District Municipality; Response Variable: Number of Hospitalisations (Family = negative binomial)
 
-model_00 <- lm(cases~age+revenue_capita+pop+area+mean, data = prevalence_2)
-vif(model_00)
-        
+Model19 <- glmmTMB(hosp ~ mean + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
+summary(Model19)
 
-        #### For Spatial Scale: Municipal Ward; Response Variable: Number of infections (Family = negative binomial)
+Model20 <- glmmTMB(hosp ~ forest + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
+summary(Model20)
 
-Model22 <- glmmTMB(cases ~ max + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+Model21 <- glmmTMB(hosp ~ grassland + age +  revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
+summary(Model21)
+
+### Section 3.2. For Spatial Scale: District Municipality; Response Variable: Number of cases per population (Family = Beta)
+
+Model22 <- glmmTMB(hosp_pop ~ mean + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = beta_family)
+                     
 summary(Model22)
 
 
-Model23 <- glmmTMB(cases ~ mean + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+Model23 <- glmmTMB(hosp_pop ~ grassland + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = beta_family)
+                     
 summary(Model23)
 
 
-Model24 <- glmmTMB(cases ~ median + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model24)
+Model24 <- glmmTMB(hosp_pop ~ forest + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = beta_family)
+                     
+summary(Model24) 
 
 
-Model25 <- glmmTMB(cases ~ range + age + pop + area +  revenue_capita + 
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+### Section 3.3. For Response Variable: Number of cases per surface area (Family = negative binomial)
+
+Model25 <- glmmTMB(hosp_area ~ mean + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
 summary(Model25)
 
 
-Model26 <- glmmTMB(cases ~ stdev + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+Model26 <- glmmTMB(hosp_area ~ grassland + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
 summary(Model26)
 
 
-Model27 <- glmmTMB(cases ~ forest + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
+Model27 <- glmmTMB(hosp_area ~ forest + age + revenue_capita + pop_dens +
+                     (1|province), data = severity, family = nbinom2)
+                     
 summary(Model27)
 
 
-Model28 <- glmmTMB(cases ~ grassland + age + pop + area +  revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model28)
 
 
-
-        #### For Spatial Scale: Municipal Ward; Response Variable: Number of infections per population (Family = Beta)
-
-Model29 <- glmmTMB(cases_pop ~ max + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~max + age + area + revenue_capita, family = beta_family)
-summary(Model29)
-
-
-Model30 <- glmmTMB(cases_pop ~ mean + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~mean + age + area + revenue_capita, family = beta_family)
-summary(Model30)
-
-
-Model31 <- glmmTMB(cases_pop ~ median + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, 
-                   ziformula = ~median + age + area + revenue_capita, family = beta_family)
-summary(Model31)
-
-
-Model32 <- glmmTMB(cases_pop ~ range + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~range + age + area + revenue_capita, family = beta_family)
-summary(Model32)
-
-
-Model33 <- glmmTMB(cases_pop ~ stdev + age + area + revenue_capita + 
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~stdev + age + area + revenue_capita, family = beta_family)
-summary(Model33)
-
-
-Model34 <- glmmTMB(cases_pop ~ forest + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~forest + age + area + revenue_capita, family = beta_family)
-summary(Model34)
-
-
-Model35 <- glmmTMB(cases_pop ~ grassland + age + area + revenue_capita +
-                     (1|province/district/local), data = prevalence_2,
-                   ziformula = ~grassland + age + area + revenue_capita, family = beta_family)
-summary(Model35)
-
-
-
-        #### For Spatial Scale: Municipal Ward; Response Variable: Number of infections per surface area (Family = negative binomial)
-
-Model36 <- glmmTMB(cases_area ~ max + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model36)
-
-
-Model37 <- glmmTMB(cases_area ~ mean + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model37)
-
-
-Model38 <- glmmTMB(cases_area ~ median + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model38)
-
-
-Model39 <- glmmTMB(cases_area ~ range + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model39)
-
-
-Model40 <- glmmTMB(cases_area ~ stdev + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model40)
-
-
-Model41 <- glmmTMB(cases_area ~ forest + age + pop  + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model41)
-
-
-Model42 <- glmmTMB(cases_area ~ grassland + age + pop + revenue_capita +
-                     (1|province/district/local), data = prevalence_2, family = nbinom2)
-summary(Model42)
-
-
-
-    ############### In this section,we model greenness and COVID-19-related Hospitalisation
-severity <- read.table("C:\\Users\\pbopa\\OneDrive\\Documents\\University of Johannesburg\\Article 2_Covid19 and Greenery\\P III Rev  Mar 2023\\Results\\Data Curation\\R Datasets\\Hosp_Dist.txt", header = TRUE)
-names(severity)
-attach(severity)
-library(glmmTMB)
-
-
-    ##We started by testing for Multicollinearity  between the predictor variables
-library(car)
-
-model_000 <- lm(hosp~age+revenue_capita+pop+area+mean, data = severity)
-vif(model_000)
-
-
-        #### For Spatial Scale: District Municipality; Response Variable: Number of Hospitalisations (Family = negative binomial)
-
-Model43 <- glmmTMB(hosp ~ max + age + pop + area +  revenue_capita +
-                    (1|province), data = severity, family = nbinom2)
-summary(Model43)
-
-
-Model44 <- glmmTMB(hosp ~ mean + age + pop + area +  revenue_capita +
-                    (1|province), data = severity, family = nbinom2)
-summary(Model44)
-
-
-Model45 <- glmmTMB(hosp ~ median + age + pop + area +  revenue_capita +
-                    (1|province), data = severity, family = nbinom2)
-summary(Model45)
-
-
-Model46 <- glmmTMB(hosp ~ range + age + pop + area +  revenue_capita +
-                    (1|province), data = severity, family = nbinom2)
-summary(Model46)
-
-
-Model47 <- glmmTMB(hosp ~ stdev + age + pop + area +  revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model47)
-
-
-Model48 <- glmmTMB(hospital ~ forest + age + pop + area +  revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model48)
-
-
-Model49 <- glmmTMB(hospital ~ grassland + age + pop + area +  revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model49)
-
-
-
-        #### For Spatial Scale: District Municipality; Response Variable: Number of cases per population (Family = Beta)
-
-Model50 <- glmmTMB(hosp_pop ~ max + age + area + revenue_capita + 
-                     (1|province), data = severity, family = beta_family)
-summary(Model50)
-
-
-Model51 <- glmmTMB(hosp_pop ~ mean + age + area + revenue_capita +
-                     (1|province), data = severity, family = beta_family)
-summary(Model51)
-
-
-Model52 <- glmmTMB(hosp_pop ~ median + age + area + revenue_capita +
-                     (1|province), data = severity, family = beta_family)
-summary(Model52)
-
-
-Model53 <- glmmTMB(hosp_pop ~ range + age + area + revenue_capita +
-                     (1|province), data = severity, family = beta_family)
-summary(Model53)
-
-
-Model54 <- glmmTMB(hosp_pop ~ stdev + age + area + revenue_capita + 
-                     (1|province), data = severity, family = beta_family)
-summary(Model54)
-
-
-Model55 <- glmmTMB(hospital_pop ~ forest + age + area + revenue_capita + 
-                     (1|province), data = severity, family = beta_family)
-summary(Model55)
-
-
-Model56 <- glmmTMB(hospital_pop ~ grassland + age + area + revenue_capita +
-                     (1|province), data = severity, family = beta_family)
-summary(Model56)
-
-
-
-        ### For Response Variable: Number of cases per surface area (Family = negative binomial)
-
-Model57 <- glmmTMB(hosp_area ~ max + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model57)
-
-
-Model58 <- glmmTMB(hosp_area ~ mean + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model58)
-
-
-Model59 <- glmmTMB(hosp_area ~ median + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model59)
-
-
-Model60 <- glmmTMB(hosp_area ~ range + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model60)
-
-
-Model61 <- glmmTMB(hosp_area ~ stdev + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model61)
-
-
-Model62 <- glmmTMB(hospital_area ~ forest + age + pop  + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model62)
-
-
-Model63 <- glmmTMB(hospital_area ~ grassland + age + pop + revenue_capita +
-                     (1|province), data = severity, family = nbinom2)
-summary(Model63)
-
-
-
-    ######### We plotted variables that depict a strong negative relationship between greenness and COVID-19 infections or Hospitalisations
-
-par(mfrow=c(2,3))
-
-plot(prevalence$mean, prevalence$cases_pop,  main = "A",
-     xlab="Mean EVI (scaled)", ylab="COVID-19 Infections (proportion)", pch=20)
-
-plot(prevalence$forest, prevalence$cases_pop, main = "B",
-     xlab="Forest Cover (scaled)", ylab="COVID-19 Infections (proportion)", pch=20)
-
-plot(prevalence_2$mean,prevalence_2$cases_pop,  main = "C",
-     xlab="Mean EVI (scaled)", ylab="COVID-19 Infections (proportion)", pch=20)
-
-plot(prevalence_2$grassland,prevalence_2$cases_pop,  main = "D",
-     xlab="Grassland Cover (scaled)", ylab="COVID-19 Infections (proportion)", pch=20)
-
-
-plot(severity$mean,severity$hosp_pop,  main = "E",
-     xlab="Mean EVI (scaled)", ylab="COVID-19 Hospitalisations (proportion)", pch=20)
-
-
-plot(severity$forest,severity$hosp_pop,  main = "F",
-     xlab="Forest Cover (scaled)", ylab="COVID-19 Hospitalisations (proportion)", pch=20)
+   
